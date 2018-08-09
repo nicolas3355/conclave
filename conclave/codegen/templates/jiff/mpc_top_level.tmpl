@@ -104,6 +104,196 @@
 
   }
 
+
+  const sortBy = function(inRel)
+  {
+    var numRows = inRel.length;
+    var numCols = inRel[0].length;
+
+  var sortArray = [];
+  for (var i = 0; i < numRows; i++)
+  {
+    sortArray.push([]);
+    for (var k = 0; j < numCols; j++)
+    {
+      sortArray[i].push(inRel[k]);
+    }
+  }
+	oddEvenSort(array, keyCol, numCols, 0, numRows, true);
+  }
+  const oddEvenSort = function(array, keyCol, numCols, lo, n, ascending)
+  {
+    if (n > 1)
+    {
+      var m = n / 2;
+      oddEvenSort(array, keyCol, numCols, lo, m, ascending);
+      oddEvenSort(array, keyCol, numCols, lo + m, m, ascending);
+      oddEvenMerge(array, keyCol, numCols, lo, n, 1, ascending);
+    }
+  }
+
+  //TODO
+  const oddEvenMerge = function(array, keyCol, numCols, lo, n, ascending)
+  {
+    var m = r * 2;
+    if (m < n)
+    {
+      oddEvenMerge(array, keyCol, numCols, lo, n, m, ascending);
+      oddEvenMerge(array, keyCol, numCols, lo + r, n, m, ascending);
+
+      for (var i = lo + r; (i + r) < (lo + n); i += m)
+      {
+        compareExchange(array, keyCol, numCols, i, i + r, ascending);
+      }
+    } else {
+      compareExchange(array, keyCol, numCols, lo, lo + r, ascending);
+    }
+  }
+
+  //TODO
+  const compareExchange = function(array, keyCol, numCols, i, j, ascending)
+  {
+    var x = array[i][keyCol];
+    var y = array[j][keyCol];
+
+    var c = 1;
+    var d = 1;
+    if (ascending)
+    {
+      c = (x.slt(y)).mult(c);
+      d = (y.slt(x)).mult(d);
+    }
+    else
+    {
+      d = (x.slt(y)).mult(d);
+      c = (y.slt(x)).mult(c);
+    }
+
+    var temp1 = [];
+    var temp2 = [];
+
+    for (var k = 0; k < numCols; k++)
+    {
+      var a = array[i][k];
+      var b = array[j][k];
+
+      temp1.push((c * a) + (d * b));
+      temp2.push((d * a) + (c * b));
+    }
+    array[i] = temp1;
+    array[j] = temp2;
+  }
+
+  //TODO: make this work similar to OblivC
+  const agg = function(inRel)
+  {
+    var numCols = 2;
+    var numRows = inRel.length;
+    var array = [];
+
+    for (var i = 0; i < numRows; i++)
+    {
+      array.push([]);
+      array[i].push(inRel[i][0]);
+      array[i].push(inRel[i][1]);
+    }
+
+    if (!(numRows && (numRows & (numRows - 1)) === 0))
+    {
+      var paddedVal = nextPowerOf2(numRows);
+      var paddedArray = padInput(array, numCols, numRows, paddedVal);
+      return agg_helper(inRel, numCols, paddedVal);
+    } else
+    {
+      return agg_helper(inRel, numCols, numRows);
+    }
+  }
+
+  const oddEvenAgg = function(array, lo, n)
+  {
+    if (n > 1)
+    {
+      var m = n / 2;
+      oddEvenAgg(array, lo, m);
+      oddEvenAgg(array, lo + m, m);
+      for (var i = 0; i < m; i++)
+      {
+        aggIfEq(array, lo + i);
+      }
+    }
+    else
+    {
+      aggIfEq(array, 0);
+    }
+  }
+
+  const aggIfEq = function(array, index)
+  {
+    var c = array[index][0].eq(array[index+1][0]);
+    array[index][0] = array[index][1].add(c.mult(array[index+1][1]));
+  }
+
+  const agg_helper = function(inRel, numCols, numRows)
+  {
+
+		oddEvenSort(array, 0, numCols, 0, numRows, true);
+		oddEvenAgg(array, 0, numRows);
+
+		oddEvenSort(array, 1, numCols, 0, numRows, false);
+
+		var outRows = 0;
+
+		for (var i = 0; i < numRows; i++)
+		{
+      var add = 1;
+      add = array[i][1].neq(0).mult(add);
+      outRows += add;
+		}
+
+    var returnArray = []
+
+		for (var i = 0; i < numOutRows; i++)
+		{
+			returnArray.push([])
+			array[i].push(array[i][0]);
+			array[i].push(array[i][1]);
+		}
+
+    return returnArray;
+  }
+
+  const padInput = function(array, numCols, numRows, padVal)
+  {
+    var paddedArray = [];
+    for (var i = 0; i < numRows; i++) {
+      paddedArray.push([]);
+      for (var j = 0; j < numCols; j++)
+      {
+        paddedArray[i].push(array[i][j]);
+      }
+    }
+
+    for (var i = numRows; i < pad; i++)
+    {
+      paddedArray.push([]);
+      for (var j = 0; j < numCols; j++)
+      {
+        paddedArray[i].push(0);
+      }
+    }
+    return paddedArray;
+  }
+
+  const nextPowerOf2 = function(n)
+  {
+    var p = 1;
+    if (n && !(n & (n - 1)))
+      return n;
+    while (p < n)
+      p <<= 1;
+    return p;
+  }
+
   const divide = function(inRel, newCol, targetCol, operands, scalar)
   {
     var result = [];
